@@ -963,6 +963,7 @@ export type GlobalStorage = {
 	'views:welcome:visible': boolean;
 	'confirm:draft:storage': boolean;
 	'home:sections:collapsed': string[];
+	'launchpad:groups:collapsed': StoredFocusGroup[];
 	'launchpad:indicator:hasLoaded': boolean;
 	'launchpad:indicator:hasInteracted': string;
 } & { [key in `confirm:ai:tos:${AIProviders}`]: boolean } & {
@@ -1180,3 +1181,15 @@ export type WalkthroughSteps =
 	| 'code-collab'
 	| 'integrations'
 	| 'more';
+
+export type StoredFocusGroup =
+	| 'current-branch'
+	| 'pinned'
+	| 'mergeable'
+	| 'blocked'
+	| 'follow-up'
+	| 'needs-review'
+	| 'waiting-for-review'
+	| 'draft'
+	| 'other'
+	| 'snoozed';

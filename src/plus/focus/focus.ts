@@ -123,6 +123,8 @@ function assertsFocusStepState(state: StepState<State>): asserts state is FocusS
 
 const instanceCounter = getScopedCounter();
 
+const defaultCollapsedGroups: FocusGroup[] = ['draft', 'other', 'snoozed'];
+
 @command()
 export class FocusCommand extends QuickCommand<State> {
 	private readonly source: Source;
@@ -176,11 +178,14 @@ export class FocusCommand extends QuickCommand<State> {
 			await this.container.git.isDiscoveringRepositories;
 		}
 
-		const collapsed = new Map<FocusGroup, boolean>([
-			['draft', true],
-			['other', true],
-			['snoozed', true],
-		]);
+		let storedCollapsed = this.container.storage.get('launchpad:groups:collapsed') satisfies
+			| FocusGroup[]
+			| undefined;
+		if (storedCollapsed == null) {
+			storedCollapsed = defaultCollapsedGroups;
+		}
+
+		const collapsed = new Map<FocusGroup, boolean>(storedCollapsed.map(g => [g, true]));
 		if (state.initialGroup != null) {
 			// set all to true except the initial group
 			for (const [group] of groupMap) {
@@ -343,6 +348,12 @@ export class FocusCommand extends QuickCommand<State> {
 							onDidSelect: () => {
 								const collapsed = !context.collapsed.get(ui);
 								context.collapsed.set(ui, collapsed);
+								if (state.initialGroup == null) {
+									void this.container.storage.store(
+										'launchpad:groups:collapsed',
+										Array.from(context.collapsed.keys()).filter(g => context.collapsed.get(g)),
+									);
+								}
 
 								if (this.container.telemetry.enabled) {
 									updateTelemetryContext(context);
